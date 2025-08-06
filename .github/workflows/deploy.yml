@@ -25,15 +25,16 @@ jobs:
             -o UserKnownHostsFile=/dev/null \
             -o BatchMode=yes \
             -o "ProxyCommand=ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -W %h:%p ec2-user@${{ secrets.BASTION_PUBLIC_IP }}" \
-            -r . ec2-user@${{ secrets.PRIVATE_EC2_IP }}:/home/ec2-user/backend-app
+            Dockerfile package*.json server.js ec2-user@${{ secrets.PRIVATE_EC2_IP }}:/home/ec2-user/backend-app/
 
       - name: Deploy on Private EC2
         run: |
           ssh -o StrictHostKeyChecking=no \
               -o UserKnownHostsFile=/dev/null \
-              -o "ProxyCommand=ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -W %h:%p ec2-user@${{ secrets.BASTION_PUBLIC_IP }}" \
+              -o ProxyJump=ec2-user@${{ secrets.BASTION_PUBLIC_IP }} \
               ec2-user@${{ secrets.PRIVATE_EC2_IP }} << 'EOF'
                 cd /home/ec2-user/backend-app
+                npm install
                 docker stop backend-container || true
                 docker rm backend-container || true
                 docker build -t backend-image .
