@@ -10,25 +10,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup SSH Key for Bastion
+      - name: Setup SSH key for Bastion
         uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.BASTION_PRIVATE_KEY }}
 
-      - name: Copy Code to Private EC2 via Bastion
+      - name: Copy code to private EC2 via Bastion
         run: |
           scp -o StrictHostKeyChecking=no \
-              -o ProxyJump=ec2-user@35.178.210.197 \
-              -r . ec2-user@10.0.3.124:/home/ec2-user/backend-app
+              -o ProxyJump=ec2-user@${{ secrets.BASTION_PUBLIC_IP }} \
+              -r . ec2-user@${{ secrets.PRIVATE_EC2_IP }}:/home/ec2-user/backend-app
 
       - name: Deploy on Private EC2
         run: |
           ssh -o StrictHostKeyChecking=no \
-              -o ProxyJump=ec2-user@35.178.210.197 \
-              ec2-user@10.0.3.124 << 'EOF'
+              -o ProxyJump=ec2-user@${{ secrets.BASTION_PUBLIC_IP }} \
+              ec2-user@${{ secrets.PRIVATE_EC2_IP }} << 'EOF'
                 cd /home/ec2-user/backend-app
                 docker stop backend-container || true
                 docker rm backend-container || true
