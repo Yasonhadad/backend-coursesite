@@ -20,9 +20,12 @@ jobs:
 
       - name: Copy code to private EC2 via Bastion
         run: |
-          scp -v -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+         scp -v -o StrictHostKeyChecking=no \
+          -o UserKnownHostsFile=/dev/null \
+          -o BatchMode=yes \
           -o ProxyJump=ec2-user@${{ secrets.BASTION_PUBLIC_IP }} \
           -r . ec2-user@${{ secrets.PRIVATE_EC2_IP }}:/home/ec2-user/backend-app
+
 
       - name: Deploy on Private EC2
         run: |
